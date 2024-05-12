@@ -14,8 +14,9 @@ import time
 st.snow()
 
 def load_model():
-    with open("ensemble1.pkl", "rb") as file:
-        loaded_ensemble1 = pickle.load(file)
+    with zipfile.ZipFile("ensemble1.pkl.zip", "r") as zip_ref:
+        with zip_ref.open("ensemble1.pkl", "r") as file:
+            loaded_ensemble1 = pickle.load(file)
     return loaded_ensemble1
 
 loaded_ensemble1 = load_model()
