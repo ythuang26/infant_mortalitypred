@@ -1,1 +1,4 @@
-# infant_mortalitypred
+# Infant Mortality Predictions
+
+Dedicated readme
+
