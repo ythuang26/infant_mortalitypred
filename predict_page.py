@@ -8,9 +8,12 @@ import zipfile
 from zipfile import ZipFile 
 
 #Create a sidebar where Users can look up explanations of the feaatures
-definition = st.sidebar.selectbox(":rainbow[Feature Explanation]", ("Birthweight (grams)","Age at Death (days)", "Obstetric Estimate", "Record-Axis Conditions","Combined Gestation",
-                                                        "Entity-Axis Conditions","Five Minute APGAR","Place of Death and Decendent’s Status"), index = None,
-                                                        placeholder = "Choose Feature...")
+definition = st.sidebar.selectbox(":rainbow[Feature Explanation]", 
+                                  ("Birthweight (grams)","Age at Death (days)", 
+                                   "Obstetric Estimate", "Record-Axis Conditions",
+                                   "Combined Gestation","Entity-Axis Conditions",
+                                   "Five Minute APGAR","Place of Death and Decendent’s Status"),
+                                    index = None, placeholder = "Choose Feature...")
 
 if definition == "Birthweight (grams)":
     st.sidebar.write("Birthweight is the first weight of a baby, taken just after being born. A low birthweight is less than 2500 grams while a very low birthweight is less than 1500 grams. The Guinness Book of World Record lists the heaviest newborn birth on record at 22 pounds (approximately 9980 grams) in 1879, who died around 11 hours after their birth. As a result, the highest permissible birthweight for this app has been set to 9999 grams.")
@@ -28,7 +31,7 @@ if definition == "Entity-Axis Conditions":
     st.sidebar.write("Entity-Axis conditions, like record-axis conditions, also refer to conditions that are recorded on the death certificate. Entity-Axis codes reflect the placement of each condition on the certificate for each decedent.") 
     st.sidebar.write("They represent what is actually written on the death certificate by the certifier expressed in terms of ICD (International Classification of Disease) codes including an indicator of which line the code came from and which position on the line it came from (if more than one code was listed per line). Multiple cause of death data has been used to look at trends in certain diseases, e.g. HIV. ")
 if definition == "Five Minute APGAR":
-    st.sidebar.write("The Agpar score is a rapid method for evaluating neonates immediately after birth and in response to resuscitation.  It is recorded in all newborn infants at 1 minute and 5 minutes after birth. AGPAR is also a useful mnemonic to describe the components of the score: appearance (color), pulse (heart rate), grimace (grimace response or reflex irritability in response to stimulation), activity (muscle tone), and respiration (breathing rate).")
+    st.sidebar.write("The Agpar score is a rapid method for evaluating neonates immediately after birth and in response to resuscitation.  It is recorded in all newborn infants at 1 minute and 5 minutes after birth. In our case we are specifically looking at the AGPAR score taken at 5 minutes. AGPAR is also a useful mnemonic to describe the components of the score: appearance (color), pulse (heart rate), grimace (grimace response or reflex irritability in response to stimulation), activity (muscle tone), and respiration (breathing rate).")
     st.sidebar.write("Each category is weighted evenly and assigned a value of 0, 1, or 2. The components are then added together to give a total score. A score of 7-10 is considered reassuring, a score of 4-6 is moderately abnormal, and a score of 0-3 is deemed to be low in full-term and late preterm infants. ")
 if definition == "Place of Death and Decendent’s Status":
     st.sidebar.write("Place of death refers to the specific venue death occurs. More comprehensively, it could refer to the site where a dying person lives and/or receives care for the later stages of their life.") 
@@ -50,6 +53,7 @@ st.write('This app predicts the most probable cause of infant death based on 8 f
 
 st.markdown("Please choose your 8 features.")
 
+#Input features and their mapping to integers (if needed)
 birthweight = st.number_input('Birthweight (grams)',max_value=9999)
 
 age = st.number_input('Age at Death (days)', max_value=365)
@@ -222,24 +226,31 @@ def top_3_predictions(new_data):
 ok = st.button(":rainbow[Calculate the Top 3 Most Probable Causes of Infant Death]")
 
 if ok: 
-    #Insertion of a progress bar
-    progress_text = "Operation in progress. Please wait."
-    my_bar = st.progress(0, text=progress_text)
-    for percent_complete in range(100):
-        time.sleep(0.01)
-        my_bar.progress(percent_complete + 1, text=progress_text)
-    time.sleep(1)
-    my_bar.empty()
+    # Check if any input is provided
+    if birthweight is None or age is None or obstetric_estimate not in obstetric_estimate_mapping \
+        or combined_gestation not in combined_gestation_mapping or agpar not in agpar_mapping \
+        or hospd not in hospd_mapping:
+        st.warning("Please provide input for all features.")
+    else:
+        #Insertion of a progress bar
+        progress_text = "Operation in progress. Please wait."
+        my_bar = st.progress(0, text=progress_text)
+        for percent_complete in range(100):
+            time.sleep(0.01)
+            my_bar.progress(percent_complete + 1, text=progress_text)
+        time.sleep(1)
+        my_bar.empty()
 
-    #Input features
-    X = np.array([[birthweight,age,obstetric_estimate_mapped,record_axis,combined_gestation_mapped,
-                   entity_axis,agpar_mapped,hospd_mapped]])
-    X = X.astype(float)
+        #Input features
+        X = np.array([[birthweight, age, obstetric_estimate_mapped, record_axis, combined_gestation_mapped,
+                       entity_axis, agpar_mapped, hospd_mapped]])
+        X = X.astype(float)
 
-    top_cause = loaded_ensemble1.predict(X)
-    top_causes = top_3_predictions(X)
+        #Make predictions
+        top_cause = loaded_ensemble1.predict(X)
+        top_causes = top_3_predictions(X)
 
-    #Print out predictions
-    st.write(top_3_predictions(X))
-    st.text(top_3_predictions(X))
-    st.subheader(top_3_predictions(X))
+        #Print out predictions
+        st.text(top_3_predictions(X))
+        
+        
