@@ -1,4 +1,4 @@
-#Infant Mortality Predictions
+# Infant Mortality Predictions
 
 Infant mortality is the death of an infant within the first year of life and continues to be a very prominent issue within developed nations such as the United States. According to the Centers for Disease Control and Prevention (CDC), a total of 23,455 deaths occurred in children under the age of 1 year in 2015, which represents an increase of 240 deaths from the previous year. The infant mortality rate is an important marker of the overall health of a society. 
 
