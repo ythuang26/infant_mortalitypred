@@ -192,6 +192,7 @@ def predictions_to_strings(predictions):
         109: 'Hemorrhagic and hematological disorders of newborn',
         118: 'Congenital malformations, deformations and chromosomal abnormalities',
         134: 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified',
+        137: 'All other diseases (Residual)',
         138: 'External causes of mortality',
         158: 'Other external causes'
     }
