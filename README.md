@@ -10,31 +10,33 @@ View deployed model here:
 
 ### File Descriptions:
 
-Infant Mortality Predictions: Jupyter Notebooks. Part 1 comprises Exploratory Data Analysis, Basic Data Transformation, Constructing the DataFrame and Search for Best Features and Fine-Tuning Parameters. Part 2 includes Creating a Machine Learning Model, Saving the Model, and Making Predictions with the Model.
+- Infant Mortality Predictions: Jupyter Notebooks.
+  -   [Part 1]() comprises Exploratory Data Analysis, Basic Data Transformation, Constructing the DataFrame and Search for Best Features and Fine-Tuning Parameters.
+  -   Part 2 includes Creating a Machine Learning Model, Saving the Model, and Making Predictions with the Model.
 
-Infant Mortality Rates by Race and Ethnicity, 2021.zip: 2021 US infant mortality rates separated by maternal race and ethnicity. From the CDC. Used specifically in visualize_page.py.
+- Infant Mortality Rates by Race and Ethnicity, 2021.zip: 2021 US infant mortality rates separated by maternal race and ethnicity. From the CDC. Used specifically in visualize_page.py.
 
-app.py: Launches app. 
+- app.py: Launches app. 
 
-baby.jpg: Picture used in predict_page.py.
+- baby.jpg: Picture used in predict_page.py.
 
-data.zip: Infant mortality rates from the World Health Organization. Contains information from various countries from over the years. Used Used specifically in visualize_page.py.
+- data.zip: Infant mortality rates from the World Health Organization. Contains information from various countries from over the years. Used Used specifically in visualize_page.py.
 
-df_intx.csv: Dataframe created at the end of Infant Mortality Predictions - Part 1. Final dataframe used to create model.
+- df_intx.csv: Dataframe created at the end of Infant Mortality Predictions - Part 1. Final dataframe used to create model.
 
-ensemble1.pkl.zip: Model. Used specifically in predict_page.py.
+- ensemble1.pkl.zip: Model. Used specifically in predict_page.py.
 
-explore_page.py: Explore page of the app.
+- explore_page.py: Explore page of the app.
 
-linkco2015usnum.csv, linkco2015usnum.zip: Original dataset from the National Bureau of Economic Research. Used also in explore_page.py.
+- linkco2015usnum.csv, linkco2015usnum.zip: Original dataset from the National Bureau of Economic Research. Used also in explore_page.py.
 
-predict_page.py: Predict page of the app.
+- predict_page.py: Predict page of the app.
 
-requirements.txt: Lists libraries used and version numbers.
+- requirements.txt: Lists libraries used and version numbers.
 
-stormtroppers.jpeg: Picture used specifically in explore_page.py.
+- stormtroppers.jpeg: Picture used specifically in explore_page.py.
 
-visualize_page.py: Visualize page of the app.
+- visualize_page.py: Visualize page of the app.
 
 
 
