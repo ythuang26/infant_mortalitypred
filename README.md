@@ -34,7 +34,7 @@ View deployed model here:
 
 - requirements.txt: Lists libraries used and version numbers.
 
-- stormtroppers.jpeg: Picture used specifically in explore_page.py.
+- [stormtroppers.jpeg](https://github.com/ythuang26/infant_mortalitypred/blob/main/stormtroppers.jpeg): Picture used specifically in explore_page.py.
 
 - visualize_page.py: Visualize page of the app.
 
