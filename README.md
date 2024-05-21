@@ -11,7 +11,7 @@ View deployed model here:
 ### File Descriptions:
 
 - Infant Mortality Predictions: Jupyter Notebooks.
-  -   [Part 1]() comprises Exploratory Data Analysis, Basic Data Transformation, Constructing the DataFrame and Search for Best Features and Fine-Tuning Parameters.
+  -   [Part 1](https://github.com/ythuang26/infant_mortalitypred/blob/main/Infant%20Mortality%20Predictions-Part%201.ipynb) comprises Exploratory Data Analysis, Basic Data Transformation, Constructing the DataFrame and Search for Best Features and Fine-Tuning Parameters.
   -   Part 2 includes Creating a Machine Learning Model, Saving the Model, and Making Predictions with the Model.
 
 - Infant Mortality Rates by Race and Ethnicity, 2021.zip: 2021 US infant mortality rates separated by maternal race and ethnicity. From the CDC. Used specifically in visualize_page.py.
