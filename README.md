@@ -18,7 +18,7 @@ View deployed model here:
 
 - app.py: Launches app. 
 
-- baby.jpg: Picture used in predict_page.py.
+- [baby.jpg](https://github.com/ythuang26/infant_mortalitypred/blob/main/baby.jpg): Picture used in predict_page.py.
 
 - data.zip: Infant mortality rates from the World Health Organization. Contains information from various countries from over the years. Used Used specifically in visualize_page.py.
 
