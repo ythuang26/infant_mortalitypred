@@ -32,6 +32,8 @@ predict_page.py: Predict page of the app.
 
 requirements.txt: Lists libraries used and version numbers.
 
+stormtroppers.jpeg: Picture used specifically in explore_page.py.
+
 visualize_page.py: Visualize page of the app.
 
 
