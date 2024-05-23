@@ -20,7 +20,7 @@ View deployed model here:
 
 - [baby.jpg](https://github.com/ythuang26/infant_mortalitypred/blob/main/baby.jpg): Picture used in predict_page.py.
   
-- [data-table.zip](): CSV file from CDC containing Infant Mortality data from across states. Used in visualize_page.py
+- [data-table.zip](https://github.com/ythuang26/infant_mortalitypred/blob/main/data-table.zip): CSV file from CDC containing Infant Mortality data from across states. Used in visualize_page.py
 - 
 - [data.zip](https://github.com/ythuang26/infant_mortalitypred/blob/main/data.zip): Infant mortality rates from the World Health Organization. Contains information from various countries from over the years. Used Used specifically in visualize_page.py.
 
