@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pickle
 import pandas as pd
-import time
 import os
 import zipfile
 from zipfile import ZipFile 
@@ -26,9 +25,8 @@ def load_data():
         df['Value'] = df['Value'].str.extract(r'(\d+\.\d+)')
         df['Value'] = df['Value'].astype(float)
         df = df[['Period','Dim1','Value','Location']]
-        df.columns = ['Year','Gender','Infant Mortality Rate','Country']
-        df['Year'] = pd.to_datetime(df['Year'], format='%Y')
-        df['Year'] = df['Year'] + pd.DateOffset(months=11)
+        df.columns = ['Year','Sex','Infant Mortality Rate','Country']
+        df['Sex'] = df['Sex'].replace('Both sexes', 'Both Sexes')
         return df
     else:
         print("The folder data does not exist.")
@@ -55,195 +53,379 @@ def load_data():
 
 df1 = load_data()
 
+#Data from https://www.cdc.gov/nchs/pressroom/sosmap/infant_mortality_rates/infant_mortality.htm
+def load_data():
+    # Unzip the file
+    with zipfile.ZipFile("data-table.zip", "r") as zip_ref:
+        zip_ref.extractall("data-table")
+
+    # Check if the folder exists
+    if os.path.exists("data-table"):
+        # Access the folder and load the CSV file into a DataFrame
+        csv_file_path = os.path.join("data-table", "data-table.csv")
+        df2 = pd.read_csv(csv_file_path)
+        #df2['YEAR'] = df2['YEAR'].replace('Provisional 2022', '2022')
+        return df2
+    else:
+        print("The folder data does not exist.")
+        return None
+
+df2 = load_data()
+
 def show_visualize_page():
 
-    st.title(":rainbow[Infant Mortality Rates Over the Years - USA]")
+    st.title(":rainbow[Infant Mortality Rates: National and International Perspectives]")
 
-    gender = st.selectbox("Select Infant Mortality Rate",("Both Sexes", "Female", "Male", "Maternal Race and Ethnicity", "All American Rates", "Comparisons with UK, Canada and Australia"), index = None, placeholder = "Choose...")
+    mortality = st.selectbox("Select American or International Infant Mortality Rates",
+                             ("United States of America", "International",
+                              ),
+                             index = None, placeholder = "National or International ...")
+    
+    if mortality == "United States of America":
 
-    #Create separate dataframes for the genders & countries
-    df_both = df.loc[df['Gender'] == 'Both sexes']
-    df_female = df.loc[df['Gender'] == 'Female']
-    df_male = df.loc[df['Gender'] == 'Male']
-
-    df_both_us = df_both.loc[df_both['Country'] == 'United States of America']
-    df_female_us = df_female.loc[df_female['Country'] == 'United States of America']
-    df_male_us = df_male.loc[df_male['Country'] == 'United States of America']
-
-    df_both_uk = df_both.loc[df_both['Country'] == 'United Kingdom of Great Britain and Northern Ireland']
-    df_female_uk = df_female.loc[df_female['Country'] == 'United Kingdom of Great Britain and Northern Ireland']
-    df_male_uk = df_male.loc[df_male['Country'] == 'United Kingdom of Great Britain and Northern Ireland']
-
-    df_both_ca = df_both.loc[df_both['Country'] == 'Canada']
-    df_female_ca = df_female.loc[df_female['Country'] == 'Canada']
-    df_male_ca = df_male.loc[df_male['Country'] == 'Canada']
-
-    df_both_au = df_both.loc[df_both['Country'] == 'Australia']
-    df_female_au = df_female.loc[df_female['Country'] == 'Australia']
-    df_male_au = df_male.loc[df_male['Country'] == 'Australia']
-
-    if gender == "Both Sexes":
+        #Filter for American dataframe
+        filtered_df = df.loc[df['Country'] == "United States of America"]
         
-        fig = px.line(df_both_us, x='Year', y='Infant Mortality Rate', title='Both Sexes Infant Mortality Rates Over Time',color_discrete_sequence=["lightseagreen"])
-        fig.update_layout(
-            xaxis_title='Year',
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20  # Add some space between the axis title and the axis
-        ),
-            title_x=0.5,  # Center the title
-        )
-        st.plotly_chart(fig)
+        # New multiselect box pops up when mortality == "United States of America"
+        us_rates = st.multiselect("Select Infant Mortality Rate by Sex", ["Both Sexes", "Female", "Male"], placeholder = "Choose option...")
 
-    if gender == "Female":
-     
-        fig1 = px.line(df_female_us, x='Year', y='Infant Mortality Rate', title='Female Infant Mortality Rates Over Time',color_discrete_sequence=["hotpink"])
-        fig1.update_layout(
-            xaxis_title='Year',
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20  
-        ),
-            title_x=0.5 
-        )
-        st.plotly_chart(fig1)
-
-    if gender == "Male":
+        #New selectbox appears mortality == "United States of America"
+        bonus = st.selectbox("Bonus Information", 
+                            ("Maternal Race and Ethnicity", "Infant Mortality Rates Across States", "Comparisons with English speaking Countries"),
+                            index=None)
         
-        fig2 = px.line(df_male_us, x='Year', y='Infant Mortality Rate', title='Male Infant Mortality Rates Over Time',color_discrete_sequence=["blueviolet"])
-        fig2.update_layout(
-            xaxis_title='Year',
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20  
-        ),
-            title_x=0.5 
-        )
-        st.plotly_chart(fig2)
+        if us_rates:
 
-    if gender == "Maternal Race and Ethnicity":
-        fig = px.bar(df1, x='Race and Ethnicity', y='Infant Mortality Rate', title='Infant Mortality Rate by Race and Ethnicity in 2021', color = 'Race and Ethnicity')
+            # Define colors for each sex
+            colors = {
+                "Both Sexes": "lightseagreen",
+                "Female": "hotpink",
+                "Male": "blueviolet",
+            }
 
-        fig.update_layout(
-            xaxis_title='',
-            xaxis=dict(
-                tickvals=[],
-                ticktext=[]
-            )
-        )
-        st.plotly_chart(fig)
+            fig = go.Figure()
 
-    if gender == "All American Rates": 
-        trace_both = go.Scatter(x=df_both_us['Year'], y=df_both_us['Infant Mortality Rate'], mode='lines', line=dict(color='lightseagreen'), name='Both Sexes')
-        trace_female = go.Scatter(x=df_female_us['Year'], y=df_female_us['Infant Mortality Rate'], mode='lines', line=dict(color='hotpink'), name='Female')
-        trace_male = go.Scatter(x=df_male_us['Year'], y=df_male_us['Infant Mortality Rate'], mode='lines', line=dict(color='blueviolet'), name='Male')
+            for sex in us_rates:
+                sex_df = filtered_df.loc[filtered_df["Sex"] == sex]
+                fig.add_trace(go.Scatter(
+                    x=sex_df['Year'],
+                    y=sex_df['Infant Mortality Rate'],
+                    mode='lines',
+                    name=sex,
+                    line=dict(color=colors[sex]),
+                    visible=True))
 
-        # Create a figure and add the traces
-        fig = go.Figure()
-        fig.add_trace(trace_both)
-        fig.add_trace(trace_female)
-        fig.add_trace(trace_male)
-
-        # Update layout to move legend outside the plot
-        fig.update_layout(
-            title='All Infant Mortality Rates Over Time',
-            title_x = 0.5,
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20
-        ))
-
-        fig1 = px.bar(df1, x='Race and Ethnicity', y='Infant Mortality Rate', title='Infant Mortality Rate by Maternal Race and Ethnicity in 2021', color = 'Race and Ethnicity')
-
-        fig1.update_layout(
-             xaxis_title='',
-            xaxis=dict(
-                tickvals=[],
-                ticktext=[]
-            ),
-            yaxis_title='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            title={
-            'text': "Infant Mortality Rate by Maternal Race and Ethnicity in 2021",
-            'y':0.9,
-            'x':0.35,
-            'xanchor': 'left',
-            'yanchor': 'top'}
-            )
+            fig.update_layout(
+                title={
+                    'text': f'Infant Mortality Rates Over Time by Gender: {", ".join(us_rates)}',
+                    'y': 0.95,  # Adjust the title position
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top',},
+                xaxis_title='Year',
+                yaxis_title='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
+                legend=dict(
+                    orientation="v",
+                    x=1,
+                    y=1,  # Adjusted to move legend further below the plot
+                    xanchor='right',
+                    yanchor='top'),
+                margin=dict(t=100),  # Adjust top margin to fit the title
+                hovermode='x unified')
+            
+            st.plotly_chart(fig)
         
-        st.plotly_chart(fig)
-        st.plotly_chart(fig1)
+        else: 
+            None
 
-    if gender == "Comparisons with UK, Canada and Australia":
-        st.subheader("Comparisons between USA, UK, Canada and Australia")
-        #All Sexes
-        trace_both_us = go.Scatter(x=df_both_us['Year'], y=df_both_us['Infant Mortality Rate'], mode='lines', line=dict(color='goldenrod'), name='USA')
-        trace_both_uk = go.Scatter(x=df_both_uk['Year'], y=df_both_uk['Infant Mortality Rate'], mode='lines', line=dict(color='cornflowerblue'), name='UK')
-        trace_both_ca = go.Scatter(x=df_both_ca['Year'], y=df_both_ca['Infant Mortality Rate'], mode='lines', line=dict(color='pink'), name='Canada')
-        trace_both_au = go.Scatter(x=df_both_au['Year'], y=df_both_au['Infant Mortality Rate'], mode='lines', line=dict(color='magenta'), name='Australia')
+        #Bar plot for rates separated by maternal race and ethnicity
+        if bonus == "Maternal Race and Ethnicity":
+            fig = px.bar(df1, x='Race and Ethnicity', y='Infant Mortality Rate', title='Infant Mortality Rate by Maternal Race and Ethnicity in 2021', color = 'Race and Ethnicity')
 
-        # Create a figure and add the traces
-        fig = go.Figure()
-        fig.add_trace(trace_both_us)
-        fig.add_trace(trace_both_uk)
-        fig.add_trace(trace_both_ca)
-        fig.add_trace(trace_both_au)
+            fig.update_layout(
+                xaxis_title='',
+                xaxis=dict(
+                    tickvals=[],
+                    ticktext=[]),
+                yaxis_title=dict(
+                    text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
+                    standoff=20))
+            
+            st.plotly_chart(fig)
 
-        # Update layout to move legend outside the plot
-        fig.update_layout(
-            title='Both Sexes Infant Mortality Rates Over Time',
-            title_x = 0.5,
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20
-        ))
+        #Chloropleth Maps for Infant Mortality Rates Across States
+        if bonus == "Infant Mortality Rates Across States":
+            
+            #Map State abbreviations to full names
+            state_mapping= {
+                'AL': 'Alabama',
+                'AK': 'Alaska',
+                'AZ': 'Arizona',
+                'AR': 'Arkansas',
+                'CA': 'California',
+                'CO': 'Colorado',
+                'CT': 'Connecticut',
+                'DE': 'Delaware',
+                'DC': 'District of Columbia',
+                'FL': 'Florida',
+                'GA': 'Georgia',
+                'HI': 'Hawaii',
+                'ID': 'Idaho',
+                'IL': 'Illinois',
+                'IN': 'Indiana',
+                'IA': 'Iowa',
+                'KS': 'Kansas',
+                'KY': 'Kentucky',
+                'LA': 'Louisiana',
+                'ME': 'Maine',
+                'MD': 'Maryland',
+                'MA': 'Massachusetts',
+                'MI': 'Michigan',
+                'MN': 'Minnesota',
+                'MS': 'Mississippi',
+                'MO': 'Missouri',
+                'MT': 'Montana',
+                'NE': 'Nebraska',
+                'NV': 'Nevada',
+                'NH': 'New Hampshire',
+                'NJ': 'New Jersey',
+                'NM': 'New Mexico',
+                'NY': 'New York',
+                'NC': 'North Carolina',
+                'ND': 'North Dakota',
+                'OH': 'Ohio',
+                'OK': 'Oklahoma',
+                'OR': 'Oregon',
+                'PA': 'Pennsylvania',
+                'RI': 'Rhode Island',
+                'SC': 'South Carolina',
+                'SD': 'South Dakota',
+                'TN': 'Tennessee',
+                'TX': 'Texas',
+                'UT': 'Utah',
+                'VT': 'Vermont',
+                'VA': 'Virginia',
+                'WA': 'Washington',
+                'WV': 'West Virginia',
+                'WI': 'Wisconsin',
+                'WY': 'Wyoming'
+            }
+            
+            #selectbox allows to choose year of interest
+            select_year = st.selectbox("Select Year", df2["YEAR"].unique())
 
-        #Females
-        trace_female_us = go.Scatter(x=df_female_us['Year'], y=df_female_us['Infant Mortality Rate'], mode='lines', line=dict(color='goldenrod'), name='USA')
-        trace_female_uk = go.Scatter(x=df_female_uk['Year'], y=df_female_uk['Infant Mortality Rate'], mode='lines', line=dict(color='cornflowerblue'), name='UK')
-        trace_female_ca = go.Scatter(x=df_female_ca['Year'], y=df_female_ca['Infant Mortality Rate'], mode='lines', line=dict(color='pink'), name='Canada')
-        trace_female_au = go.Scatter(x=df_female_au['Year'], y=df_female_au['Infant Mortality Rate'], mode='lines', line=dict(color='magenta'), name='Australia')
+            #select filtered dataframe for selected year
+            year_df = df2.loc[df2["YEAR"] == select_year]
+            
+            #new column with full state name
+            year_df["STATE_NAME"] = year_df["STATE"].map(state_mapping)
 
-        # Create a figure and add the traces
-        fig1 = go.Figure()
-        fig1.add_trace(trace_female_us)
-        fig1.add_trace(trace_female_uk)
-        fig1.add_trace(trace_female_ca)
-        fig1.add_trace(trace_female_au)
+            if select_year: #year has been selected
 
-        # Update layout to move legend outside the plot
-        fig1.update_layout(
-            title='Female Infant Mortality Rates Over Time',
-            title_x = 0.5,
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20
-        ))
+                #create horizontal radio buttons to select for rate or absolute deaths
+                rate_or_number = st.radio("Select Infant Mortality Rate or Total Number of Infant Deaths",
+                                              ("Infant Mortality Rate", "Total Number of Infant Deaths"),
+                                              horizontal = True)
+                
+                #choropleth map for infant mortality rate
+                if rate_or_number == "Infant Mortality Rate":
 
-        #Males
-        trace_male_us = go.Scatter(x=df_male_us['Year'], y=df_male_us['Infant Mortality Rate'], mode='lines', line=dict(color='goldenrod'), name='USA')
-        trace_male_uk = go.Scatter(x=df_male_uk['Year'], y=df_male_uk['Infant Mortality Rate'], mode='lines', line=dict(color='cornflowerblue'), name='UK')
-        trace_male_ca = go.Scatter(x=df_male_ca['Year'], y=df_male_ca['Infant Mortality Rate'], mode='lines', line=dict(color='pink'), name='Canada')
-        trace_male_au = go.Scatter(x=df_male_au['Year'], y=df_male_au['Infant Mortality Rate'], mode='lines', line=dict(color='magenta'), name='Australia')
+                    fig_map = go.Figure(data=go.Choropleth(
+                        locations = year_df["STATE"], #spatial coordinates
+                        z = year_df["RATE"], #data to be color-coordinated
+                        locationmode = "USA-states",
+                        text = year_df["STATE_NAME"], #hover text with full state names
+                        colorscale = "agsunset",
+                        colorbar_title = "Percentage"))
 
-        # Create a figure and add the traces
-        fig2 = go.Figure()
-        fig2.add_trace(trace_male_us)
-        fig2.add_trace(trace_male_uk)
-        fig2.add_trace(trace_male_ca)
-        fig2.add_trace(trace_male_au)
+                    fig_map.update_layout(
+                        title_text = f"Infant Mortality by State {select_year}",
+                        geo_scope = "usa")
 
-        # Update layout to move legend outside the plot
-        fig2.update_layout(
-            title='Male Infant Mortality Rates Over Time',
-            title_x = 0.5,
-            yaxis_title=dict(
-            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
-            standoff=20
-        ))
+                    st.plotly_chart(fig_map)
+                
+                #choropleth map for infant deaths
+                if rate_or_number == "Total Number of Infant Deaths":
+                    fig_map = go.Figure(data=go.Choropleth(
+                    locations = year_df["STATE"], #spatial coordinates
+                    z = year_df["DEATHS"], #data to be color-coordinated
+                    locationmode = "USA-states",
+                    text = year_df["STATE_NAME"], #hover text with full state names
+                    colorscale = "portland",
+                    colorbar_title = "DEATHS"))
 
-        st.plotly_chart(fig)
-        st.plotly_chart(fig1)
-        st.plotly_chart(fig2)
+                    fig_map.update_layout(
+                        title_text = f"Total Number of Infant Deaths by State in {select_year}",
+                        geo_scope = "usa")
 
+                    st.plotly_chart(fig_map)
+
+
+        if bonus == "Comparisons with English speaking Countries": #Compare US rates with other English-speaking countries
+
+            #map countries to specific colors
+            country_colors = {
+                "United States of America": "goldenrod",
+                "United Kingdom of Great Britain and Northern Ireland": "cornflowerblue",
+                "Canada": "pink",
+                "Australia": "magenta"
+}
+            comparison_df = df[df['Country'].isin(["United States of America", "United Kingdom of Great Britain and Northern Ireland", "Canada", "Australia"])]
+
+            # Plot for both sexes
+            fig_both_sexes = px.line(comparison_df.loc[comparison_df['Sex'] == 'Both Sexes'], x='Year', y='Infant Mortality Rate', color='Country', 
+                                     title='Infant Mortality Rate Comparison for Both Sexes',
+                                     color_discrete_map=country_colors)
+            
+            fig_both_sexes.update_layout(hovermode='x unified',
+                                        title={
+                                            'text': 'Infant Mortality Rate Comparison for Both Sexes',
+                                            'xanchor': 'center',
+                                            'yanchor': 'top',
+                                            'x': 0.5,
+                                            'y': 0.95 },
+                                        legend=dict(
+                                            orientation="h",  # Make the legend horizontal
+                                            yanchor="bottom",  # Anchor the legend at the bottom
+                                            y=-0.3,  # Place the legend below the plot
+                                            xanchor="center",  # Center the legend horizontally
+                                            x=0.5),  # Place the legend in the center of the plot
+                                        yaxis_title=dict(
+                                            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
+                                            standoff=20),
+                                        margin=dict(l=20, r=20, t=50, b=100))  # Adjust margins to give space for the legend,
+                                        
+            
+            st.plotly_chart(fig_both_sexes)
+
+            # Plot for female
+            fig_female = px.line(comparison_df.loc[comparison_df['Sex'] == 'Female'], x='Year', y='Infant Mortality Rate', color='Country', 
+                                 title='Infant Mortality Rate Comparison for Females',
+                                 color_discrete_map=country_colors)
+            
+            fig_female.update_layout(hovermode='x unified',
+                                     title={
+                                            'text': 'Infant Mortality Rate Comparison for Females',
+                                            'xanchor': 'center',
+                                            'yanchor': 'top',
+                                            'x': 0.5,
+                                            'y': 0.95 },
+                                        legend=dict(
+                                            orientation="h",  # Make the legend horizontal
+                                            yanchor="bottom",  # Anchor the legend at the bottom
+                                            y=-0.3,  # Place the legend below the plot
+                                            xanchor="center",  # Center the legend horizontally
+                                            x=0.5),  # Place the legend in the center of the plot
+                                        yaxis_title=dict(
+                                            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
+                                            standoff=20),
+                                            margin=dict(l=20, r=20, t=50, b=100))  # Adjust margins to give space for the legend
+                                     
+            st.plotly_chart(fig_female)
+
+            # Plot for male
+            fig_male = px.line(comparison_df.loc[comparison_df['Sex'] == 'Male'], x='Year', y='Infant Mortality Rate', color='Country', 
+                               title='Infant Mortality Rate Comparison for Males',
+                               color_discrete_map=country_colors)
+            
+            fig_male.update_layout(hovermode='x unified',
+                                   title={
+                                            'text': 'Infant Mortality Rate Comparison for Males',
+                                            'xanchor': 'center',
+                                            'yanchor': 'top',
+                                            'x': 0.5,
+                                            'y': 0.95 },
+                                    legend=dict(
+                                        orientation="h",  # Make the legend horizontal
+                                        yanchor="bottom",  # Anchor the legend at the bottom
+                                        y=-0.3,  # Place the legend below the plot
+                                        xanchor="center",  # Center the legend horizontally
+                                        x=0.5),  # Place the legend in the center of the plot
+                                    yaxis_title=dict(
+                                            text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
+                                            standoff=20),
+                                    margin=dict(l=20, r=20, t=50, b=100))  # Adjust margins to give space for the legend
+            
+            st.plotly_chart(fig_male)
+
+    #Display infant mortality rates for international countries
+    if mortality ==  "International":
+
+        countries = ['Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Anguilla', 'Antigua and Barbuda', 
+                    'Argentina', 'Armenia', 'Australia', 'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 
+                    'Barbados', 'Belarus', 'Belgium', 'Belize', 'Benin', 'Bhutan', 'Bolivia (Plurinational State of)', 
+                    'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'British Virgin Islands', 'Brunei Darussalam', 
+                    'Bulgaria', 'Burkina Faso', 'Burundi', 'Cabo Verde', 'Cambodia', 'Cameroon', 'Canada', 
+                    'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros', 'Congo', 'Cook Islands', 
+                    'Costa Rica', "Cote d'Ivoire", 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 'Democratic Republic of the Congo', 
+                    "Democratic People's Republic of Korea", 'Denmark', 'Djibouti', 'Dominica', 'Dominican Republic', 
+                    'Ecuador', 'Egypt', 'El Salvador', 'Equatorial Guinea', 'Eritrea', 'Estonia', 'Eswatini', 'Ethiopia', 
+                    'Fiji', 'Finland', 'France', 'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 
+                    'Guatemala', 'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India', 
+                    'Indonesia', 'Iran (Islamic Republic of)', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 
+                    'Jordan', 'Kazakhstan', 'Kenya', 'Kiribati', 'Kuwait', 'Kyrgyzstan', "Lao People's Democratic Republic", 
+                    'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Lithuania', 'Luxembourg', 'Madagascar', 'Malawi', 
+                    'Malaysia', 'Maldives', 'Mali', 'Malta', 'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 
+                    'Micronesia (Federated States of)', 'Monaco', 'Mongolia', 'Montenegro', 'Montserrat', 'Morocco', 
+                    'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal', 'Netherlands (Kingdom of the)', 'New Zealand', 
+                    'Nicaragua', 'Niger', 'Nigeria', 'Niue', 'North Macedonia', 'Norway', 'occupied Palestinian territory, including east Jerusalem', 
+                    'Oman', 'Pakistan', 'Palau', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland', 
+                    'Portugal', 'Qatar', 'Republic of Korea', 'Republic of Moldova', 'Romania', 'Russian Federation', 'Rwanda', 
+                    'Saint Kitts and Nevis', 'Saint Lucia', 'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 
+                    'Sao Tome and Principe', 'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 
+                    'Slovakia', 'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Spain', 'Sri Lanka', 
+                    'Sudan', 'Suriname', 'Sweden', 'Switzerland', 'Syrian Arab Republic', 'Tajikistan', 'Thailand', 'Timor-Leste', 
+                    'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey', 'Turkmenistan', 'Turks and Caicos Islands', 
+                    'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom of Great Britain and Northern Ireland', 
+                    'United Republic of Tanzania', 'United States of America', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Venezuela (Bolivarian Republic of)', 
+                    'Viet Nam', 'Yemen', 'Zambia', 'Zimbabwe', 'Kosovo (in accordance with UN Security Council resolution 1244 (1999))']
+        
+        select_countries = st.multiselect("Historical Trends in Infant Mortality Rates Globally",countries, placeholder = "Select Countries...")
+   
+        if select_countries:
+
+            #Filter for the selected countries
+            filtered_df = df[df['Country'].isin(select_countries)]
+
+            #Further filter for the selected gender
+            selected_sex = st.selectbox("Select Sex",("Both Sexes", "Female", "Male",), index=None, placeholder="Choose Sex...")
+
+            if selected_sex == "Both Sexes":
+                filtered_df = filtered_df.loc[filtered_df['Sex'] == "Both Sexes"]
+            if selected_sex == "Female":
+                filtered_df = filtered_df.loc[filtered_df['Sex'] == "Female"]
+            if selected_sex == "Male":
+                filtered_df = filtered_df.loc[filtered_df['Sex'] == "Male"]
+
+            fig = go.Figure()
+
+            #Add a line plot for each country
+            for country in select_countries:
+                country_df = filtered_df.loc[filtered_df['Country'] == country]
+                fig.add_trace(go.Scatter(
+                x=country_df['Year'],
+                y=country_df['Infant Mortality Rate'],
+                mode='lines',
+                name=country))
+            
+            fig.update_layout(
+                title=f'{selected_sex} Infant Mortality Rates Over Time',
+                title_x=0.5,
+                xaxis_title='Year',
+                yaxis_title=dict(
+                    text='Infant Mortality Rate<br><sup>Deaths Per 1000 Live Births</sup>',
+                    standoff=20),
+                hovermode='x unified',
+                legend=dict(
+                    orientation="h",  # Make the legend horizontal
+                    yanchor="bottom",  # Anchor the legend at the bottom
+                    y=-0.3,  # Place the legend below the plot
+                    xanchor="center",  # Center the legend horizontally
+                    x=0.5),  # Place the legend in the center of the plot
+                margin=dict(l=20, r=20, t=50, b=100),  # Adjust margins to give space for the legend
+                    hoverlabel=dict(
+                        bgcolor='rgba(0,0,0,0)'))
+
+            st.plotly_chart(fig)
 
         

@@ -15,7 +15,7 @@ def load_data():
     if os.path.exists("linkco2015usnum"):
         # Access the folder and load the CSV file into a DataFrame
         csv_file_path = os.path.join("linkco2015usnum", "linkco2015usnum.csv")
-        df = pd.read_csv(csv_file_path)
+        df = pd.read_csv(csv_file_path, low_memory=False)
         #Create 17 Disease Classes
         df['ucodr130copy'] = df['ucodr130']
         df.loc[(df['ucodr130copy'] >= 1) & (df['ucodr130copy'] <= 22), 'ucodr130copy'] = 1
@@ -48,11 +48,10 @@ def show_explore_page():
 
     st.write("130 Selected Causes of Infant Death Adapted from the International Classification of Diseases, Tenth Revision")
 
-    #st.write("Discover Disease Categories and the Most Common Diseases among them")
-
+    #First Selectbox for overview of major disease categories
     big_disease = st.selectbox("Explore the 17 Disease Categories and their Subcategories",
-                            ("17 Major Disease Categories",None)
-                            ,index= None, placeholder = "Discover Disease Categories and the Most Common Diseases among them...")
+                            ("17 Major Disease Categories",None),
+                            index= None, placeholder = "Discover Disease Categories and the Most Common Diseases among them...")
 
     big_group_mapping = {
         1: 'Certain infectious and parasitic diseases',
@@ -74,46 +73,44 @@ def show_explore_page():
         158: 'Other external causes'
     }
 
+    #Pie Chart of Major Disease Categories
     if big_disease == "17 Major Disease Categories":
 
+        #Get Disease Counts
         big_group = df.ucodr130copy.value_counts().reset_index()
+
+        #Map disease integer to corresponding strings
         big_group.ucodr130copy = big_group.ucodr130copy.map(big_group_mapping)
         big_group.columns = ["17 Major Disease Categories", "Count"]
         
         fig = go.Figure(data=[go.Pie(
-        labels=big_group["17 Major Disease Categories"],
-        values=big_group['Count'],
-        hoverinfo='label+percent',  # Customize hover information
-        textinfo='percent',  # Show percentage and label on the slices
-        textposition='inside',  # Position the text inside the slices
-        textfont_size=18  
-        )])
-        #fig.update_traces(textfont_size=18)
+            labels=big_group["17 Major Disease Categories"],
+            values=big_group['Count'],
+            hoverinfo='label+percent',  # Customize hover information
+            textinfo='percent',  # Show percentage and label on the slices
+            textposition='inside',  # Position the text inside the slices
+            textfont_size=18)])
+     
         fig.update_layout(
-            title={
-            'text': "17 Major Disease Categories",
-            },
+            title={'text': "17 Major Disease Categories"},
             width=800,  # Set the width of the figure
             height=800,  # Set the height of the figusres
             legend=dict(
-            orientation="h",  # Horizontal legend
-            x=0.5,  # Center the legend horizontally
-            y=-0.1,  # Position the legend just below the chart
-            xanchor='center',  # Anchor the x position to the center
-            yanchor='top'  # Anchor the y position to the top
-            
-        ),
+                orientation="h",  # Horizontal legend
+                x=0.5,  # Center the legend horizontally
+                y=-0.1,  # Position the legend just below the chart
+                xanchor='center',  # Anchor the x position to the center
+                yanchor='top'),  # Anchor the y position to the top       
             showlegend=False,
-            margin=dict(l=20, r=20, t=30, b=100)
-    # margin=dict(l=20, r=20, t=20, b=100)  # Adjust margins to give space for the legend
-    )
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
 
         st.plotly_chart(fig)
 
+    #Explore subcategories of Major Disease Groups
     disease = st.selectbox("Explore the Disease Subcategories",
-                        (#"17 Major Disease Categories",
-                        "Certain infectious and parasitic diseases",
+                        ("Certain infectious and parasitic diseases",
                         "Neoplasms",
                         "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism",
                         'Endocrine, nutritional and metabolic diseases',
@@ -129,8 +126,8 @@ def show_explore_page():
                         'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified',
                         'All other diseases (Residual)',
                         'External causes of mortality',
-                        'Other external causes'
-                        ),index= None, placeholder = "Choose Disease Subcategory...")
+                        'Other external causes'),
+                        index= None, placeholder = "Choose Disease Subcategory...")
 
     group1_mapping = {
         2: 'Certain intestinal infectious diseases',
@@ -269,9 +266,7 @@ def show_explore_page():
 
     group13_mapping = {
         135: 'Sudden infant death syndrome',
-        136: 'Other symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified',
-        137: 'All other diseases (Residual)'
-        
+        136: 'Other symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified'       
     }
 
     group14_mapping = {
@@ -295,36 +290,33 @@ def show_explore_page():
 
     if disease == "Certain infectious and parasitic diseases":
         filtered_df1 = df.loc[(df.ucodr130 >= 1) & (df.ucodr130 <= 22)]
-        filtered_df1.ucodr130 = filtered_df1.ucodr130.map(group1_mapping)
-        filtered_df1 = filtered_df1.ucodr130.value_counts().reset_index()
+        filtered_df1.ucodr130 = filtered_df1.ucodr130.map(group1_mapping) #Map disease integer to corresponding strings
+        filtered_df1 = filtered_df1.ucodr130.value_counts().reset_index()  #Get Disease Counts
         filtered_df1.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df1["Diseases"],
-        values=filtered_df1['Count'],
-        hoverinfo='label+percent',  # Customize hover information
-        textinfo='percent',  # Show percentage and label on the slices
-        textposition='inside',  # Position the text inside the slices
-        textfont_size=18  
-    )])
-        #fig.update_layout(legend={'font': {'size': 17}, })
+            labels=filtered_df1["Diseases"],
+            values=filtered_df1['Count'],
+            hoverinfo='label+percent',  # Customize hover information
+            textinfo='percent',  # Show percentage and label on the slices
+            textposition='inside',  # Position the text inside the slices
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': "Certain infectious and parasitic diseases",
-        },
-        width=800,  # Set the width of the figure
-        height=800,  # Set the height of the figure
-        legend=dict(
-            orientation="h",  # Horizontal legend
-            x=0.5,  # Center the legend horizontally
-            y=-0.1,  # Position the legend just below the chart
-            xanchor='center',  # Anchor the x position to the center
-            yanchor='top'  # Anchor the y position to the top
-        ),
+            title={'text': "Certain infectious and parasitic diseases"},
+            width=800,  # Set the width of the figure
+            height=800,  # Set the height of the figure
+            legend=dict(
+                orientation="h",  # Horizontal legend
+                x=0.5,  # Center the legend horizontally
+                y=-0.1,  # Position the legend just below the chart
+                xanchor='center',  # Anchor the x position to the center
+                yanchor='top'),  # Anchor the y position to the top
             showlegend=False,
-            margin=dict(l=20, r=20, t=30, b=100)  # Adjust margins to give space for the legend
-    )
+            margin=dict(l=20, r=20, t=30, b=100))  # Adjust margins to give space for the legend
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == "Neoplasms":
@@ -334,30 +326,28 @@ def show_explore_page():
         filtered_df2.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df2["Diseases"],
-        values=filtered_df2['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18  
-    )])
+            labels=filtered_df2["Diseases"],
+            values=filtered_df2['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+
         fig.update_layout(
-        title={
-            'text': "Neoplasms",
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top',
-            # {'itemsizing': 'constant'}  
-        ),showlegend=False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': "Neoplasms"},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend=False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism":
@@ -367,30 +357,28 @@ def show_explore_page():
         filtered_df3.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df3["Diseases"],
-        values=filtered_df3['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df3["Diseases"],
+            values=filtered_df3['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+
         fig.update_layout(
-        title={
-            'text': "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism",
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': "Diseases of the blood and blood-forming organs and certain disorders involving the immune mechanism"},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)    
 
     if disease == 'Endocrine, nutritional and metabolic diseases':
@@ -400,30 +388,28 @@ def show_explore_page():
         filtered_df4.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df4["Diseases"],
-        values=filtered_df4['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df4["Diseases"],
+            values=filtered_df4['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Endocrine, nutritional and metabolic diseases',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Endocrine, nutritional and metabolic diseases'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Diseases of the nervous system':
@@ -433,35 +419,33 @@ def show_explore_page():
         filtered_df5.columns = ["Diseases", "Count"]  
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df5["Diseases"],
-        values=filtered_df5['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df5["Diseases"],
+            values=filtered_df5['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Diseases of the nervous system',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Diseases of the nervous system'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)  
 
     if disease == 'Diseases of the ear and mastoid process':
-        st.warning("No Subcategories for this Category")
-        st.image("stormtroppers.jpeg")
+        st.warning("No Subcategories for this Category") #Warning if there is no further categories
+        st.image("stormtroppers.jpeg") #Picture that appears as warning
 
     if disease == 'Diseases of the circulatory system':
         filtered_df6 = df[(df.ucodr130 >= 47) & (df.ucodr130 <= 52)]
@@ -470,30 +454,28 @@ def show_explore_page():
         filtered_df6.columns = ["Diseases", "Count"]    
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df6["Diseases"],
-        values=filtered_df6['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df6["Diseases"],
+            values=filtered_df6['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Diseases of the circulatory system',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Diseases of the circulatory system'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Diseases of the respiratory system':
@@ -503,30 +485,28 @@ def show_explore_page():
         filtered_df7.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df7["Diseases"],
-        values=filtered_df7['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df7["Diseases"],
+            values=filtered_df7['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Diseases of the respiratory system',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Diseases of the respiratory system'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Diseases of the digestive system':
@@ -536,30 +516,28 @@ def show_explore_page():
         filtered_df8.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df8["Diseases"],
-        values=filtered_df8['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df8["Diseases"],
+            values=filtered_df8['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Diseases of the digestive system',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Diseases of the digestive system'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
         
     if disease == 'Diseases of the genitourinary system':
@@ -569,30 +547,28 @@ def show_explore_page():
         filtered_df9.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df9["Diseases"],
-        values=filtered_df9['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df9["Diseases"],
+            values=filtered_df9['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Diseases of the genitourinary system',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Diseases of the genitourinary system'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Certain conditions originating in the perinatal period':
@@ -602,30 +578,28 @@ def show_explore_page():
         filtered_df10.columns = ["Diseases", "Count"]   
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df10["Diseases"],
-        values=filtered_df10['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df10["Diseases"],
+            values=filtered_df10['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Certain conditions originating in the perinatal period',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Certain conditions originating in the perinatal period'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Hemorrhagic and hematological disorders of newborn':
@@ -635,30 +609,28 @@ def show_explore_page():
         filtered_df11.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df11["Diseases"],
-        values=filtered_df11['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df11["Diseases"],
+            values=filtered_df11['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Hemorrhagic and hematological disorders of newborn',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Hemorrhagic and hematological disorders of newborn'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Congenital malformations, deformations and chromosomal abnormalities':
@@ -668,30 +640,28 @@ def show_explore_page():
         filtered_df12.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df12["Diseases"],
-        values=filtered_df12['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df12["Diseases"],
+            values=filtered_df12['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Congenital malformations, deformations and chromosomal abnormalities',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Congenital malformations, deformations and chromosomal abnormalities'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified':
@@ -701,30 +671,28 @@ def show_explore_page():
         filtered_df13.columns = ["Diseases", "Count"]
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df13["Diseases"],
-        values=filtered_df13['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df13["Diseases"],
+            values=filtered_df13['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'Symptoms, signs and abnormal clinical and laboratory findings, not elsewhere classified'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'All other diseases (Residual)':
@@ -738,30 +706,28 @@ def show_explore_page():
         filtered_df14.columns = ["Diseases", "Count"]   
 
         fig = go.Figure(data=[go.Pie(
-        labels=filtered_df14["Diseases"],
-        values=filtered_df14['Count'],
-        hoverinfo='label+percent', 
-        textinfo='percent',  
-        textposition='inside',
-        textfont_size=18    
-    )])
+            labels=filtered_df14["Diseases"],
+            values=filtered_df14['Count'],
+            hoverinfo='label+percent', 
+            textinfo='percent',  
+            textposition='inside',
+            textfont_size=18)])
+        
         fig.update_layout(
-        title={
-            'text': 'External causes of mortality',
-        },
-        width=800,  
-        height=800,  
-        legend=dict(
-            orientation="h",
-            x=0.5,  
-            y=-0.1,  
-            xanchor='center',  
-            yanchor='top'  
-        ),
-        showlegend = False,
-        margin=dict(l=20, r=20, t=30, b=100)  
-    )
+            title={'text': 'External causes of mortality'},
+            width=800,  
+            height=800,  
+            legend=dict(
+                orientation="h",
+                x=0.5,  
+                y=-0.1,  
+                xanchor='center',  
+                yanchor='top'),
+            showlegend = False,
+            margin=dict(l=20, r=20, t=30, b=100))
+        
         fig.update_traces(hoverlabel=dict(font=dict(size=16)))
+
         st.plotly_chart(fig)
 
     if disease == 'Other external causes':

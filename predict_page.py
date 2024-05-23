@@ -9,14 +9,14 @@ from zipfile import ZipFile
 
 def show_predict_page():
 
-    #Create a sidebar where Users can look up explanations of the feaatures
+    #Create a sidebar where Users can look up explanations of the features
     definition = st.sidebar.selectbox(":rainbow[Feature Explanation]", 
                                     ("Birthweight (grams)","Age at Death (days)", 
                                     "Obstetric Estimate", "Record-Axis Conditions",
                                     "Combined Gestation","Entity-Axis Conditions",
                                     "Five Minute APGAR","Place of Death and Decendent’s Status"),
                                         index = None, placeholder = "Choose Feature...")
-
+    
     if definition == "Birthweight (grams)":
         st.sidebar.write("Birthweight is the first weight of a baby, taken just after being born. A low birthweight is less than 2500 grams while a very low birthweight is less than 1500 grams. The Guinness Book of World Record lists the heaviest newborn birth on record at 22 pounds (approximately 9980 grams) in 1879, who died around 11 hours after their birth. As a result, the highest permissible birthweight for this app has been set to 9999 grams.")
     if definition == "Age at Death (days)":
@@ -91,6 +91,7 @@ def show_predict_page():
             "Unknown": 11
         }
 
+    #Since our model cannot intake strings as variables, we map our strings to integers
     if obstetric_estimate in obstetric_estimate_mapping:
         obstetric_estimate_mapped = obstetric_estimate_mapping[obstetric_estimate]
 
@@ -127,6 +128,7 @@ def show_predict_page():
             "Unknown": 11
         }
 
+    #Since our model cannot intake strings as variables, we map our strings to integers
     if combined_gestation in combined_gestation_mapping:
         combined_gestation_mapped = combined_gestation_mapping[combined_gestation]
 
@@ -147,6 +149,7 @@ def show_predict_page():
             "Unknown or not stated":5
         }
 
+    #Since our model cannot intake strings as variables, we map our strings to integers
     if agpar in agpar_mapping:
         agpar_mapped = agpar_mapping[agpar]
 
@@ -175,9 +178,11 @@ def show_predict_page():
             "Place of death unknown": 8
         }
 
+    #Since our model cannot intake strings as variables, we map our strings to integers
     if hospd in hospd_mapping:
         hospd_mapped = hospd_mapping[hospd]
 
+    #Map our integer predictions to strings
     def predictions_to_strings(predictions):
         label_mapping = {
             1: 'Certain infectious and parasitic diseases',
@@ -204,6 +209,7 @@ def show_predict_page():
         
         return string_predictions
 
+    #Give our top 3 predictions and their probabilities
     def top_3_predictions(new_data):
         predicted_probabilities = loaded_ensemble1.predict_proba(new_data)
         output = ""
@@ -253,7 +259,9 @@ def show_predict_page():
             top_cause = loaded_ensemble1.predict(X)
             top_causes = top_3_predictions(X)
 
-            #Print out predictions
-            st.text(top_3_predictions(X))
+
+            #Print out top 3 predictions
+            st.text(top_causes)
+   
             
             
