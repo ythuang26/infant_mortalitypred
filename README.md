@@ -6,7 +6,7 @@ There are many determinants that impact infant mortality. The Linked Death files
 
 The objective of this project was to create a model that would predict the top 3 causes of infant death based on 8 user feature inputs. The causes of death were categorized according to the International Classification of Diseases, Tenth Revision (ICD-10). 
 
-View deployed model here:
+[View deployed model here](https://infantmortalitypred.streamlit.app/)
 
 ### File Descriptions:
 
